@@ -121,7 +121,7 @@ namespace hospitalwebapp.Controllers
             return $"P-{nextNumber:D4}";
         }
 
-        [RequirePermission("RegisterPatient")]
+        // [RequirePermission("RegisterPatient")]
         [HttpPost]
         public async Task<IActionResult> CreatePatient([FromBody] CreatePatientDto dto)
         {
@@ -160,7 +160,7 @@ namespace hospitalwebapp.Controllers
             }));
         }
 
-        [RequirePermission("EditPatientInfo")]
+        // [RequirePermission("EditPatientInfo")]
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdatePatient(int id, [FromBody] UpdatePatientDto dto)
         {
@@ -201,7 +201,7 @@ namespace hospitalwebapp.Controllers
             return Ok(new ApiResponseNoData(true, 200, "Patient updated successfully"));
         }
 
-        [RequirePermission("DeletePatient")]
+        // [RequirePermission("DeletePatient")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> SoftDeletePatient(int id)
         {
@@ -228,7 +228,7 @@ namespace hospitalwebapp.Controllers
             return Ok(new ApiResponseNoData(true, 200, "Patient deleted successfully"));
         }
 
-        [RequirePermission("RestorePatient")]
+        // [RequirePermission("RestorePatient")]
         [HttpPatch("{id}/restore")]
         public async Task<IActionResult> RestorePatient(int id)
         {

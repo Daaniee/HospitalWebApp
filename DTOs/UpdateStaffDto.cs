@@ -16,6 +16,8 @@ public class UpdateStaffDto
     [MaxLength(10)]
     public string? Gender { get; set; }
 
+    public string? Specialization { get; set; }
+
     [MaxLength(255)]
     public string? ProfileImageUrl { get; set; }
 

@@ -20,6 +20,8 @@ public class CreateStaffDto
     [MaxLength(10)]
     public string Gender { get; set; }
 
+    public string? Specialization { get; set; }
+
     [Required]
     [MaxLength(255)]
     public string ProfileImageUrl { get; set; }

@@ -35,6 +35,8 @@ namespace hospitalwebapp.Models
 
     [Required]
     public string PasswordHash { get; set; }
+    
+    public string? Specialization { get; set; }
 
     public bool IsActive { get; set; } = true;
     public bool IsDeleted { get; set; } = false;

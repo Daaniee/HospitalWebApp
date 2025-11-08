@@ -84,7 +84,7 @@ namespace hospitalwebapp.Controllers
         //     }));
         // }
 
-        [RequirePermission("ViewStaff")]
+        // [RequirePermission("ViewStaff")]
         [HttpGet("all")]
         public async Task<IActionResult> GetAll([FromQuery] int page = 1, [FromQuery] int pageSize = 10, [FromQuery] string? sortBy = null, [FromQuery] bool descending = false)
         {
@@ -119,6 +119,7 @@ namespace hospitalwebapp.Controllers
                 s.Gender,
                 s.ProfileImageUrl,
                 s.IsActive,
+                s.Specialization,
                 Role = s.Role?.Name,
                 s.CreatedAt,
                 s.UpdatedAt
@@ -179,6 +180,7 @@ namespace hospitalwebapp.Controllers
                 s.Gender,
                 s.ProfileImageUrl,
                 s.IsActive,
+                s.Specialization,
                 Role = s.Role?.Name,
                 s.CreatedAt,
                 s.UpdatedAt
@@ -229,6 +231,7 @@ namespace hospitalwebapp.Controllers
                 Email = dto.Email,
                 PhoneNumber = dto.PhoneNumber,
                 Gender = dto.Gender,
+                Specialization = dto.Specialization,
                 ProfileImageUrl = dto.ProfileImageUrl,
                 PasswordHash = dto.PasswordHash,
                 RoleId = dto.RoleId,
@@ -263,6 +266,7 @@ namespace hospitalwebapp.Controllers
             staff.Email = dto.Email ?? staff.Email;
             staff.PhoneNumber = dto.PhoneNumber ?? staff.PhoneNumber;
             staff.Gender = dto.Gender ?? staff.Gender;
+            staff.Specialization = dto.Specialization ?? staff.Specialization;
             staff.ProfileImageUrl = dto.ProfileImageUrl ?? staff.ProfileImageUrl;
             staff.IsActive = dto.IsActive ?? staff.IsActive;
             staff.RoleId = dto.RoleId ?? staff.RoleId;
@@ -321,7 +325,7 @@ namespace hospitalwebapp.Controllers
             return Ok(new ApiResponseNoData(true, 200, "Staff restored"));
         }
 
-        [RequirePermission("ManageRoles")]
+        // [RequirePermission("ManageRoles")]
         [HttpGet("role-audit/{id}")]
         public async Task<IActionResult> GetRoleAuditLogs(int id)
         {

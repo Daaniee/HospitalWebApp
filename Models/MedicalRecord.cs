@@ -18,8 +18,8 @@ namespace hospitalwebapp.Models
 
         public DateTime VisitDate { get; set; }
 
-        public DateTime CheckInTime { get; set; }
-        public DateTime CheckOutTime { get; set; }
+        public DateTime? CheckInTime { get; set; }
+        public DateTime? CheckOutTime { get; set; }
 
         [MaxLength(500)]
         public string Symptoms { get; set; }
@@ -29,6 +29,9 @@ namespace hospitalwebapp.Models
 
         [MaxLength(500)]
         public string Prescription { get; set; }
+
+        public bool IsDeleted { get; set; } = false;
+
 
         [MaxLength(1000)]
         public string Notes { get; set; }

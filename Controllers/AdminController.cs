@@ -20,7 +20,7 @@ namespace hospitalwebapp.Controllers
         }
 
         
-        [RequirePermission("ManageRoles")]
+        // [RequirePermission("ManageRoles")]
         [HttpGet("all")]
         public async Task<IActionResult> GetAllRolesIncludingDeleted()
         {
@@ -41,7 +41,7 @@ namespace hospitalwebapp.Controllers
             return Ok(new ApiResponse<object>(true, 200, "All roles retrieved", response));
         }
 
-        [RequirePermission("ManageRoles")]
+        // [RequirePermission("ManageRoles")]
         [HttpGet("search")]
         public async Task<IActionResult> GetRole([FromQuery] int? id, [FromQuery] string? name)
         {
@@ -80,7 +80,7 @@ namespace hospitalwebapp.Controllers
             return Ok(new ApiResponse<object>(true, 200, "Role retrieved successfully", result));
         }
 
-        [RequirePermission("ManageRoles")]
+        // [RequirePermission("ManageRoles")]
         [HttpPut("update")]
         public async Task<IActionResult> UpdateRole([FromBody] UpdateRoleDto dto)
         {
@@ -110,7 +110,7 @@ namespace hospitalwebapp.Controllers
             return Ok(new ApiResponse<object>(true, 200, "Role updated successfully", new { role.Id, role.Name }));
         }
 
-        [RequirePermission("ManagePermissions")]
+        // [RequirePermission("ManagePermissions")]
         [HttpGet("permissions", Name = "Search By Permission")]
         public async Task<IActionResult> GetRolePermissions([FromQuery] int? id, [FromQuery] string? name)
         {
@@ -140,7 +140,7 @@ namespace hospitalwebapp.Controllers
             return Ok(new ApiResponse<object>(true, 200, "Permissions retrieved successfully", permissions));
         }
 
-        [RequirePermission("ManagePermissions")]
+        // [RequirePermission("ManagePermissions")]
         [HttpPost("permissions/assign")]
         public async Task<IActionResult> AssignPermissions([FromBody] AssignPermissionsDto dto)
         {
@@ -174,7 +174,7 @@ namespace hospitalwebapp.Controllers
             return Ok(new ApiResponseNoData(true, 200, "Permissions assigned successfully"));
         }
 
-        [RequirePermission("ManagePermissions")]
+        // [RequirePermission("ManagePermissions")]
         [HttpDelete("permissions/remove")]
         public async Task<IActionResult> RemovePermissions([FromBody] RemovePermissionsDto dto)
         {
@@ -208,7 +208,7 @@ namespace hospitalwebapp.Controllers
             return Ok(new ApiResponseNoData(true, 200, "Permissions removed successfully"));
         }
 
-        [RequirePermission("ManageRoles")]
+        // [RequirePermission("ManageRoles")]
         [HttpPost("create")]
         public async Task<IActionResult> CreateRole([FromBody] string name)
         {
@@ -229,7 +229,7 @@ namespace hospitalwebapp.Controllers
             return Ok(new ApiResponse<object>(true, 201, "Role created successfully", new { role.Id, role.Name }));
         }
 
-        [RequirePermission("ManageRoles")]
+        // [RequirePermission("ManageRoles")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> SoftDeleteRole(int id)
         {
@@ -254,7 +254,7 @@ namespace hospitalwebapp.Controllers
             return Ok(new ApiResponseNoData(true, 200, "Role soft-deleted successfully"));
         }
 
-        [RequirePermission("ManageRoles")]
+        // [RequirePermission("ManageRoles")]
         [HttpPost("{id}/restore")]
         public async Task<IActionResult> RestoreRole(int id)
         {
@@ -270,7 +270,7 @@ namespace hospitalwebapp.Controllers
             return Ok(new ApiResponseNoData(true, 200, "Role restored successfully"));
         }
 
-        [RequirePermission("ManageRoles")]
+        // [RequirePermission("ManageRoles")]
         [HttpPut("staff/reassign")]
         public async Task<IActionResult> ReassignStaffRole([FromBody] ReassignStaffDTO dto)
         {
@@ -304,7 +304,7 @@ namespace hospitalwebapp.Controllers
             return Ok(new ApiResponseNoData(true, 200, "Staff reassigned to new role"));
         }
         
-        [RequirePermission("ManageRoles")]
+        // [RequirePermission("ManageRoles")]
         [HttpPut("bulk-assign")]
         public async Task<IActionResult> BulkAssignRole([FromBody] BulkAssignRoleDto dto)
         {
@@ -329,7 +329,7 @@ namespace hospitalwebapp.Controllers
             return Ok(new ApiResponseNoData(true, 200, "Role assigned to staff"));
         }
 
-        [RequirePermission("ManageRoles")]
+        // [RequirePermission("ManageRoles")]
         [HttpPost("create-with-permissions")]
         public async Task<IActionResult> CreateRoleWithPermissions([FromBody] CreateRoleWithPermissionsDto dto)
         {
@@ -356,7 +356,7 @@ namespace hospitalwebapp.Controllers
             return Ok(new ApiResponse<object>(true, 201, "Role created with permissions", new { role.Id, role.Name }));
         }
 
-        [RequirePermission("ViewAuditLogs")]
+        // [RequirePermission("ViewAuditLogs")]
         [HttpGet("{id}/audit")]
         public async Task<IActionResult> GetRoleAudit(int id)
         {
