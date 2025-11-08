@@ -2,7 +2,6 @@ using System.ComponentModel.DataAnnotations;
 
 public class StaffSearchDto
 {
-    [Required]
     public int? Id { get; set; }
     public string? FullName { get; set; }
     public string? Email { get; set; }

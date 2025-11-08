@@ -18,7 +18,6 @@ namespace hospitalwebapp.DTOs
         [MaxLength(255)]
         public string Address { get; set; }
 
-        [MaxLength(5)]
         public string BloodType { get; set; }
     }
 }

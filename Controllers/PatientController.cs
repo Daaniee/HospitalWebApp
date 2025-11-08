@@ -122,7 +122,7 @@ namespace hospitalwebapp.Controllers
         }
 
         // [RequirePermission("RegisterPatient")]
-        [HttpPost]
+        [HttpPost("create")]
         public async Task<IActionResult> CreatePatient([FromBody] CreatePatientDto dto)
         {
             if (!ModelState.IsValid)
@@ -255,6 +255,26 @@ namespace hospitalwebapp.Controllers
             return Ok(new ApiResponseNoData(true, 200, "Patient restored successfully"));
         }
 
+        [HttpGet("patients/deleted")]
+        public async Task<IActionResult> GetDeletedPatients()
+        {
+            var deletedPatients = await _context.Patients
+                .Where(p => p.IsDeleted) // or p.DeletedAt != null
+                .Select(p => new
+                {
+                    p.Id,
+                    p.FullName,
+                    p.Age,
+                    p.Address,
+                    p.BloodType
+                })
+                .ToListAsync();
+
+            if (!deletedPatients.Any())
+                return NotFound(new ApiResponseNoData(false, 404, "No deleted patients found"));
+
+            return Ok(new ApiResponse<object>(true, 200, "Deleted patients retrieved successfully", deletedPatients));
+        }
 
     }
 }

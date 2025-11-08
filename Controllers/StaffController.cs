@@ -135,7 +135,7 @@ namespace hospitalwebapp.Controllers
         }
 
         [HttpPost("filter")]
-        public async Task<IActionResult> FilterStaff([FromBody] StaffSearchDto dto)
+        public async Task<IActionResult> FilterStaff([FromQuery] StaffSearchDto dto)
         {
             var query = _context.Staff
                 .Include(s => s.Role)
@@ -223,35 +223,54 @@ namespace hospitalwebapp.Controllers
             // Generate CustomId
             string customId = $"{prefix}{(count + 1).ToString().PadLeft(4, '0')}";
 
-
-            var staff = new Staff
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            try
             {
-                CustomId = customId,
-                FullName = dto.FullName,
-                Email = dto.Email,
-                PhoneNumber = dto.PhoneNumber,
-                Gender = dto.Gender,
-                Specialization = dto.Specialization,
-                ProfileImageUrl = dto.ProfileImageUrl,
-                PasswordHash = dto.PasswordHash,
-                RoleId = dto.RoleId,
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow
-            };
+                var staff = new Staff
+                {
+                    CustomId = customId,
+                    FullName = dto.FullName,
+                    Email = dto.Email,
+                    PhoneNumber = dto.PhoneNumber,
+                    Gender = dto.Gender,
+                    Specialization = dto.Specialization ?? string.Empty,
+                    ProfileImageUrl = dto.ProfileImageUrl,
+                    PasswordHash = dto.PasswordHash,
+                    RoleId = dto.RoleId,
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow
+                };
 
-            _context.Staff.Add(staff);
-            await _context.SaveChangesAsync();
+                _context.Staff.Add(staff);
+                await _context.SaveChangesAsync();
 
-            var adminId = HttpContext.Session?.GetInt32("StaffId") ?? 0;
-            _audit.Log("CreateStaff", null, adminId, staff.Id);
+                var adminId = HttpContext.Session?.GetInt32("StaffId") ?? 0;
 
-            return Ok(new ApiResponse<object>(true, 201, "Staff created", new
+                // Audit log must succeed, otherwise rollback
+                _audit.Log(
+                    action: "CreateStaff",
+                    roleId: null,
+                    staffId: adminId,
+                    targetStaffId: staff.Id,
+                    targetPatientId: null,
+                    details: $"Staff {staff.FullName} ({staff.CustomId}) created with role {role.Name}"
+                );
+
+                await transaction.CommitAsync();
+
+                return Ok(new ApiResponse<object>(true, 201, "Staff created", new
+                {
+                    staff.Id,
+                    staff.CustomId,
+                    staff.FullName,
+                    staff.Email
+                }));
+            }
+            catch (Exception ex)
             {
-                staff.Id,
-                staff.CustomId,
-                staff.FullName,
-                staff.Email
-            }));
+                await transaction.RollbackAsync();
+                return StatusCode(500, new ApiResponseNoData(false, 500, $"Failed to create staff: {ex.Message}"));
+            }
         }
 
         [HttpPut("{id}")]

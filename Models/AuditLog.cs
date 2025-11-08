@@ -13,7 +13,7 @@ namespace hospitalwebapp.Models
         public int? TargetStaffId { get; set; }   // Who was affected (e.g. reassigned)
         public int? TargetPatientId { get; set; } // For patient-related actions
         public string Action { get; set; } = string.Empty;
-        public string Details { get; set; }       // Optional: summary or JSON
+        public string Details { get; set; } = string.Empty;      // Optional: summary or JSON
         public DateTime Timestamp { get; set; } = DateTime.UtcNow;
     }
 

@@ -8,12 +8,12 @@ namespace hospitalwebapp.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class AdminController : ControllerBase
+    public class RoleController : ControllerBase
     {
         private readonly AppDbContext _context;
         private readonly IAuditLogger _audit;
 
-        public AdminController(AppDbContext context, IAuditLogger audit)
+        public RoleController(AppDbContext context, IAuditLogger audit)
         {
             _context = context;
             _audit = audit;
@@ -100,15 +100,37 @@ namespace hospitalwebapp.Controllers
             if (string.IsNullOrWhiteSpace(dto.NewName))
                 return BadRequest(new ApiResponseNoData(false, 400, "New name is required"));
 
-            role.Name = dto.NewName;
-            await _context.SaveChangesAsync();
-            var adminId = HttpContext.Session.GetInt32("StaffId")?? 999;
-            _audit.Log("UpdateRoleName", role.Id, adminId, null);
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            try
+            {
+                // 1. Update role name
+                role.Name = dto.NewName;
+                await _context.SaveChangesAsync();
 
+                // 2. Audit log
+                var adminId = HttpContext.Session.GetInt32("StaffId") ?? 999;
+                _audit.Log(
+                    action: "UpdateRoleName",
+                    roleId: role.Id,
+                    staffId: adminId,
+                    targetStaffId: null,
+                    targetPatientId: null,
+                    details: $"Role renamed to {role.Name} by admin {adminId}"
+                );
 
+                // ✅ Commit only if both succeed
+                await transaction.CommitAsync();
 
-            return Ok(new ApiResponse<object>(true, 200, "Role updated successfully", new { role.Id, role.Name }));
+                return Ok(new ApiResponse<object>(true, 200, "Role updated successfully", new { role.Id, role.Name }));
+            }
+            catch (Exception ex)
+            {
+                // ❌ Rollback if anything fails
+                await transaction.RollbackAsync();
+                return StatusCode(500, new ApiResponseNoData(false, 500, $"Failed to update role: {ex.Message}"));
+            }
         }
+
 
         // [RequirePermission("ManagePermissions")]
         [HttpGet("permissions", Name = "Search By Permission")]
@@ -166,13 +188,37 @@ namespace hospitalwebapp.Controllers
             if (!newPermissions.Any())
                 return BadRequest(new ApiResponseNoData(false, 400, "No new permissions to assign"));
 
-            await _context.RolePermissions.AddRangeAsync(newPermissions);
-            await _context.SaveChangesAsync();
-            var adminId = HttpContext.Session.GetInt32("StaffId");
-            _audit.Log("AssignPermissions", role.Id, adminId, null);
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            try
+            {
+                // 1. Assign new permissions
+                await _context.RolePermissions.AddRangeAsync(newPermissions);
+                await _context.SaveChangesAsync();
 
-            return Ok(new ApiResponseNoData(true, 200, "Permissions assigned successfully"));
+                // 2. Audit log
+                var adminId = HttpContext.Session.GetInt32("StaffId");
+                _audit.Log(
+                    action: "AssignPermissions",
+                    roleId: role.Id,
+                    staffId: adminId,
+                    targetStaffId: null,
+                    targetPatientId: null,
+                    details: $"Assigned {newPermissions.Count} new permissions to role {role.Name}"
+                );
+
+                // ✅ Commit only if both succeed
+                await transaction.CommitAsync();
+
+                return Ok(new ApiResponseNoData(true, 200, "Permissions assigned successfully"));
+            }
+            catch (Exception ex)
+            {
+                // ❌ Rollback if anything fails
+                await transaction.RollbackAsync();
+                return StatusCode(500, new ApiResponseNoData(false, 500, $"Failed to assign permissions: {ex.Message}"));
+            }
         }
+
 
         // [RequirePermission("ManagePermissions")]
         [HttpDelete("permissions/remove")]
@@ -198,19 +244,40 @@ namespace hospitalwebapp.Controllers
             if (!toRemove.Any())
                 return BadRequest(new ApiResponseNoData(false, 400, "No matching permissions found to remove"));
 
-            _context.RolePermissions.RemoveRange(toRemove);
-            await _context.SaveChangesAsync();
-            var adminId = HttpContext.Session.GetInt32("StaffId");
-            _audit.Log("RemovePermissions", role.Id, adminId, null);
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            try
+            {
+                // 1. Remove permissions
+                _context.RolePermissions.RemoveRange(toRemove);
+                await _context.SaveChangesAsync();
 
+                // 2. Audit log
+                var adminId = HttpContext.Session.GetInt32("StaffId");
+                _audit.Log(
+                    action: "RemovePermissions",
+                    roleId: role.Id,
+                    staffId: adminId,
+                    targetStaffId: null,
+                    targetPatientId: null,
+                    details: $"Removed {toRemove.Count} permissions from role {role.Name}"
+                );
 
+                // ✅ Commit only if both succeed
+                await transaction.CommitAsync();
 
-            return Ok(new ApiResponseNoData(true, 200, "Permissions removed successfully"));
+                return Ok(new ApiResponseNoData(true, 200, "Permissions removed successfully"));
+            }
+            catch (Exception ex)
+            {
+                // ❌ Rollback if anything fails
+                await transaction.RollbackAsync();
+                return StatusCode(500, new ApiResponseNoData(false, 500, $"Failed to remove permissions: {ex.Message}"));
+            }
         }
 
         // [RequirePermission("ManageRoles")]
         [HttpPost("create")]
-        public async Task<IActionResult> CreateRole([FromBody] string name)
+        public async Task<IActionResult> CreateRole([FromQuery] string name)
         {
             if (string.IsNullOrWhiteSpace(name))
                 return BadRequest(new ApiResponseNoData(false, 400, "Role name is required"));
@@ -219,15 +286,38 @@ namespace hospitalwebapp.Controllers
             if (exists)
                 return Conflict(new ApiResponseNoData(false, 409, "Role already exists"));
 
-            var role = new Role { Name = name };
-            _context.Roles.Add(role);
-            await _context.SaveChangesAsync();
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            try
+            {
+                // 1. Create role
+                var role = new Role { Name = name };
+                _context.Roles.Add(role);
+                await _context.SaveChangesAsync();
 
-            var adminId = HttpContext.Session.GetInt32("StaffId");
-            _audit.Log("CreateRole", role.Id, adminId, null);
+                // 2. Audit log
+                var adminId = HttpContext.Session.GetInt32("StaffId");
+                _audit.Log(
+                    action: "CreateRole",
+                    roleId: role.Id,
+                    staffId: adminId,
+                    targetStaffId: null,
+                    targetPatientId: null,
+                    details: $"Role {role.Name} created by admin {adminId}"
+                );
 
-            return Ok(new ApiResponse<object>(true, 201, "Role created successfully", new { role.Id, role.Name }));
+                // ✅ Commit only if both succeed
+                await transaction.CommitAsync();
+
+                return Ok(new ApiResponse<object>(true, 201, "Role created successfully", new { role.Id, role.Name }));
+            }
+            catch (Exception ex)
+            {
+                // ❌ Rollback if anything fails
+                await transaction.RollbackAsync();
+                return StatusCode(500, new ApiResponseNoData(false, 500, $"Failed to create role: {ex.Message}"));
+            }
         }
+
 
         // [RequirePermission("ManageRoles")]
         [HttpDelete("{id}")]
@@ -243,15 +333,35 @@ namespace hospitalwebapp.Controllers
             if (role.IsDeleted)
                 return BadRequest(new ApiResponseNoData(false, 400, "Role is already deleted"));
 
-            role.IsDeleted = true;
-            await _context.SaveChangesAsync();
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            try
+            {
+                // 1. Mark role as deleted
+                role.IsDeleted = true;
+                await _context.SaveChangesAsync();
 
-            var adminId = HttpContext.Session.GetInt32("StaffId");
-            _audit.Log("SoftDeleteRole", role.Id, adminId, null);
+                // 2. Audit log
+                var adminId = HttpContext.Session.GetInt32("StaffId");
+                _audit.Log(
+                    action: "SoftDeleteRole",
+                    roleId: role.Id,
+                    staffId: adminId,
+                    targetStaffId: null,
+                    targetPatientId: null,
+                    details: $"Role {role.Name} soft-deleted by admin {adminId}"
+                );
 
+                // ✅ Commit only if both succeed
+                await transaction.CommitAsync();
 
-
-            return Ok(new ApiResponseNoData(true, 200, "Role soft-deleted successfully"));
+                return Ok(new ApiResponseNoData(true, 200, "Role soft-deleted successfully"));
+            }
+            catch (Exception ex)
+            {
+                // ❌ Rollback if anything fails
+                await transaction.RollbackAsync();
+                return StatusCode(500, new ApiResponseNoData(false, 500, $"Failed to soft-delete role: {ex.Message}"));
+            }
         }
 
         // [RequirePermission("ManageRoles")]
@@ -262,12 +372,35 @@ namespace hospitalwebapp.Controllers
             if (role == null || !role.IsDeleted)
                 return NotFound(new ApiResponseNoData(false, 404, "Role not found or not deleted"));
 
-            role.IsDeleted = false;
-            await _context.SaveChangesAsync();
-            var adminId = HttpContext.Session.GetInt32("StaffId");
-            _audit.Log("RestoreRole", role.Id, adminId, null);
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            try
+            {
+                // 1. Restore role
+                role.IsDeleted = false;
+                await _context.SaveChangesAsync();
 
-            return Ok(new ApiResponseNoData(true, 200, "Role restored successfully"));
+                // 2. Audit log
+                var adminId = HttpContext.Session.GetInt32("StaffId");
+                _audit.Log(
+                    action: "RestoreRole",
+                    roleId: role.Id,
+                    staffId: adminId,
+                    targetStaffId: null,
+                    targetPatientId: null,
+                    details: $"Role {role.Name} restored by admin {adminId}"
+                );
+
+                // ✅ Commit only if both succeed
+                await transaction.CommitAsync();
+
+                return Ok(new ApiResponseNoData(true, 200, "Role restored successfully"));
+            }
+            catch (Exception ex)
+            {
+                // ❌ Rollback if anything fails
+                await transaction.RollbackAsync();
+                return StatusCode(500, new ApiResponseNoData(false, 500, $"Failed to restore role: {ex.Message}"));
+            }
         }
 
         // [RequirePermission("ManageRoles")]
@@ -296,14 +429,37 @@ namespace hospitalwebapp.Controllers
             if (staff == null || role == null)
                 return NotFound(new ApiResponseNoData(false, 404, "Staff or role not found"));
 
-            staff.RoleId = role.Id;
-            await _context.SaveChangesAsync();
-            var adminId = HttpContext.Session.GetInt32("StaffId");
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            try
+            {
+                // 1. Update staff role
+                staff.RoleId = role.Id;
+                await _context.SaveChangesAsync();
 
-            _audit.Log("ReassignStaffRole", role.Id, adminId, staff.Id);
-            return Ok(new ApiResponseNoData(true, 200, "Staff reassigned to new role"));
+                // 2. Audit log
+                var adminId = HttpContext.Session.GetInt32("StaffId");
+                _audit.Log(
+                    action: "ReassignStaffRole",
+                    roleId: role.Id,
+                    staffId: adminId,
+                    targetStaffId: staff.Id,
+                    targetPatientId: null,
+                    details: $"Staff {staff.FullName} ({staff.CustomId}) reassigned to role {role.Name}"
+                );
+
+                // ✅ Commit only if both succeed
+                await transaction.CommitAsync();
+
+                return Ok(new ApiResponseNoData(true, 200, "Staff reassigned to new role"));
+            }
+            catch (Exception ex)
+            {
+                // ❌ Rollback if anything fails
+                await transaction.RollbackAsync();
+                return StatusCode(500, new ApiResponseNoData(false, 500, $"Failed to reassign staff role: {ex.Message}"));
+            }
         }
-        
+
         // [RequirePermission("ManageRoles")]
         [HttpPut("bulk-assign")]
         public async Task<IActionResult> BulkAssignRole([FromBody] BulkAssignRoleDto dto)
@@ -316,17 +472,40 @@ namespace hospitalwebapp.Controllers
             if (!staffList.Any())
                 return BadRequest(new ApiResponseNoData(false, 400, "No matching staff found"));
 
-            foreach (var staff in staffList)
-                staff.RoleId = role.Id;
-
-            await _context.SaveChangesAsync();
-            var adminId = HttpContext.Session.GetInt32("StaffId");
-            foreach (var staff in staffList)
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            try
             {
-                _audit.Log("BulkAssignRole", role.Id, adminId, staff.Id);
-            }
+                // 1. Assign role to staff
+                foreach (var staff in staffList)
+                    staff.RoleId = role.Id;
 
-            return Ok(new ApiResponseNoData(true, 200, "Role assigned to staff"));
+                await _context.SaveChangesAsync();
+
+                // 2. Audit logs
+                var adminId = HttpContext.Session.GetInt32("StaffId");
+                foreach (var staff in staffList)
+                {
+                    _audit.Log(
+                        action: "BulkAssignRole",
+                        roleId: role.Id,
+                        staffId: adminId,
+                        targetStaffId: staff.Id,
+                        targetPatientId: null,
+                        details: $"Role {role.Name} assigned to staff {staff.FullName} ({staff.CustomId})"
+                    );
+                }
+
+                // ✅ Commit only if both succeed
+                await transaction.CommitAsync();
+
+                return Ok(new ApiResponseNoData(true, 200, "Role assigned to staff"));
+            }
+            catch (Exception ex)
+            {
+                // ❌ Rollback if anything fails
+                await transaction.RollbackAsync();
+                return StatusCode(500, new ApiResponseNoData(false, 500, $"Failed to assign role: {ex.Message}"));
+            }
         }
 
         // [RequirePermission("ManageRoles")]
@@ -340,21 +519,49 @@ namespace hospitalwebapp.Controllers
             if (exists)
                 return Conflict(new ApiResponseNoData(false, 409, "Role already exists"));
 
-            var role = new Role { Name = dto.Name };
-            _context.Roles.Add(role);
-            await _context.SaveChangesAsync();
+            if (dto.PermissionIds == null || !dto.PermissionIds.Any())
+                return BadRequest(new ApiResponseNoData(false, 400, "At least one permission is required"));
 
-            var rolePermissions = dto.PermissionIds
-                .Select(pid => new RolePermission { RoleId = role.Id, PermissionId = pid })
-                .ToList();
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            try
+            {
+                // 1. Create role
+                var role = new Role { Name = dto.Name };
+                _context.Roles.Add(role);
+                await _context.SaveChangesAsync();
 
-            await _context.RolePermissions.AddRangeAsync(rolePermissions);
-            await _context.SaveChangesAsync();
-            var adminId = HttpContext.Session.GetInt32("StaffId");
-            _audit.Log("CreateRoleWithPermissions", role.Id, adminId, null);
+                // 2. Create role-permission links
+                var rolePermissions = dto.PermissionIds
+                    .Select(pid => new RolePermission { RoleId = role.Id, PermissionId = pid })
+                    .ToList();
 
-            return Ok(new ApiResponse<object>(true, 201, "Role created with permissions", new { role.Id, role.Name }));
+                await _context.RolePermissions.AddRangeAsync(rolePermissions);
+                await _context.SaveChangesAsync();
+
+                // 3. Audit log
+                var adminId = HttpContext.Session.GetInt32("StaffId");
+                _audit.Log(
+                    action: "CreateRoleWithPermissions",
+                    roleId: role.Id,
+                    staffId: adminId,
+                    targetStaffId: null,
+                    targetPatientId: null,
+                    details: $"Role {role.Name} created with {rolePermissions.Count} permissions"
+                );
+
+                // ✅ Commit only if all succeed
+                await transaction.CommitAsync();
+
+                return Ok(new ApiResponse<object>(true, 201, "Role created with permissions", new { role.Id, role.Name }));
+            }
+            catch (Exception ex)
+            {
+                // ❌ Rollback if anything fails
+                await transaction.RollbackAsync();
+                return StatusCode(500, new ApiResponseNoData(false, 500, $"Failed to create role: {ex.Message}"));
+            }
         }
+
 
         // [RequirePermission("ViewAuditLogs")]
         [HttpGet("{id}/audit")]

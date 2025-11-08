@@ -25,7 +25,7 @@ namespace hospitalwebapp.Services
                 RoleId = roleId,
                 TargetStaffId = targetStaffId,
                 TargetPatientId = targetPatientId,
-                Details = details,
+                Details = details?? string.Empty,
                 Timestamp = DateTime.UtcNow
             };
 
