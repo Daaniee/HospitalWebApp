@@ -58,7 +58,9 @@ namespace hospitalwebapp.Controllers
             var record = new MedicalRecord
             {
                 PatientId = dto.PatientId,
+                Patient = patient,
                 DoctorId = dto.DoctorId,
+                Doctor = doctor,
                 VisitDate = dto.VisitDate,
                 Symptoms = dto.Symptoms ?? string.Empty,
                 Diagnosis = dto.Diagnosis ?? string.Empty,

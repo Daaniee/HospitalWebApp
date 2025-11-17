@@ -27,7 +27,7 @@ namespace hospitalwebapp.Controllers
             var roles = await _context.Roles
                 .IgnoreQueryFilters()
                 .Include(r => r.RolePermissions)
-                    .ThenInclude(rp => rp.Permission)
+                .ThenInclude(rp => rp.Permission)
                 .ToListAsync();
 
             var response = roles.Select(role => new
@@ -35,7 +35,11 @@ namespace hospitalwebapp.Controllers
                 role.Id,
                 role.Name,
                 role.IsDeleted,
-                Permissions = role.RolePermissions.Select(rp => rp.Permission.Action).ToList()
+                Permissions = role.RolePermissions?
+                    .Select(rp => rp.Permission?.Action)
+                    .Where(action => !string.IsNullOrWhiteSpace(action))
+                    .Select(action => action!)
+                    .ToList() ?? new List<string>()
             });
 
             return Ok(new ApiResponse<object>(true, 200, "All roles retrieved", response));
@@ -147,10 +151,13 @@ namespace hospitalwebapp.Controllers
                     .ThenInclude(rp => rp.Permission)
                     .FirstOrDefaultAsync(r => r.Id == id);
             else
+            {
+                var searchName = name!.ToLower();
                 role = await _context.Roles
                     .Include(r => r.RolePermissions)
                     .ThenInclude(rp => rp.Permission)
-                    .FirstOrDefaultAsync(r => r.Name.ToLower() == name.ToLower());
+                    .FirstOrDefaultAsync(r => r.Name != null && r.Name.ToLower() == searchName);
+            }
 
             if (role == null)
                 return NotFound(new ApiResponseNoData(false, 404, "Role not found"));
@@ -179,7 +186,7 @@ namespace hospitalwebapp.Controllers
             if (role == null)
                 return NotFound(new ApiResponseNoData(false, 404, "Role not found"));
 
-            var existingPermissionIds = role.RolePermissions.Select(rp => rp.PermissionId).ToHashSet();
+            var existingPermissionIds = role.RolePermissions?.Select(rp => rp.PermissionId).ToHashSet() ?? new HashSet<int>();
             var newPermissions = dto.PermissionIds
                 .Where(pid => !existingPermissionIds.Contains(pid))
                 .Select(pid => new RolePermission { RoleId = role.Id, PermissionId = pid })

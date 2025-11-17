@@ -10,14 +10,28 @@ namespace hospitalwebapp.DTOs
     {
         [Required]
         [MaxLength(100)]
-        public string FullName { get; set; }
+        public string FullName { get; set; } = string.Empty;
+
+        [Required]
+        [MaxLength(100)]
+        public string Email { get; set; } = string.Empty;
+
+        [Required]
+        [MaxLength(100)]
+        public string PasswordHash { get; set; } = string.Empty;
 
         [Range(0, 120)]
         public int Age { get; set; }
 
         [MaxLength(255)]
-        public string Address { get; set; }
+        public required string Address { get; set; }
 
-        public string BloodType { get; set; }
+        public required string BloodType { get; set; }
+        public required int PhoneNumber { get; set; }
+        public required string Gender { get; set; }
+        public string? ProfileImageUrl { get; set; }
+        public string? EmergencyContact { get; set; }
+        public required string Genotype { get; set; }
+        
     }
 }

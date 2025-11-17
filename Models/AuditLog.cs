@@ -15,6 +15,12 @@ namespace hospitalwebapp.Models
         public string Action { get; set; } = string.Empty;
         public string Details { get; set; } = string.Empty;      // Optional: summary or JSON
         public DateTime Timestamp { get; set; } = DateTime.UtcNow;
+
+        public Staff? Staff { get; set; }
+public Role? Role { get; set; }
+public Staff? TargetStaff { get; set; }
+public Patient? TargetPatient { get; set; }
+
     }
 
 

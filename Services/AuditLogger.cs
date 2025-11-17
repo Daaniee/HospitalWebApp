@@ -14,7 +14,7 @@ namespace hospitalwebapp.Services
             _httpContext = httpContext;
         }
 
-        public void Log(string action, int? roleId = null, int? staffId = null, int? targetStaffId = null, int? targetPatientId = null, string details = null)
+        public void Log(string action, int? roleId = null, int? staffId = null, int? targetStaffId = null, int? targetPatientId = null, string? details = null)
         {
             var currentStaffId = staffId ?? _httpContext.HttpContext?.Session.GetInt32("StaffId");
 

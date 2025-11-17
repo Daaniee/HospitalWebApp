@@ -10,7 +10,7 @@ public class AvailableDoctor
 
         [ForeignKey("Doctor")]
         public int DoctorId { get; set; }
-        public Staff Doctor { get; set; }
+        public required Staff Doctor { get; set; }
 
         public bool IsAvailable { get; set; }
 

@@ -10,11 +10,11 @@ namespace hospitalwebapp.Models
 
         [ForeignKey("Patient")]
         public int PatientId { get; set; }
-        public Patient Patient { get; set; }
+        public required Patient Patient { get; set; }
 
         [ForeignKey("Doctor")]
         public int DoctorId { get; set; }
-        public Staff Doctor { get; set; }
+        public required Staff Doctor { get; set; }
 
         public DateTime VisitDate { get; set; }
 
@@ -22,19 +22,19 @@ namespace hospitalwebapp.Models
         public DateTime? CheckOutTime { get; set; }
 
         [MaxLength(500)]
-        public string Symptoms { get; set; }
+        public string? Symptoms { get; set; }
 
         [MaxLength(500)]
-        public string Diagnosis { get; set; }
+        public string? Diagnosis { get; set; }
 
         [MaxLength(500)]
-        public string Prescription { get; set; }
+        public string? Prescription { get; set; }
 
         public bool IsDeleted { get; set; } = false;
 
 
         [MaxLength(1000)]
-        public string Notes { get; set; }
+        public string? Notes { get; set; }
 
         public DateTime? FollowUpDate { get; set; }
 

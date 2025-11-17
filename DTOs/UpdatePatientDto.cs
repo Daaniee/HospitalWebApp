@@ -11,6 +11,12 @@ namespace hospitalwebapp.DTOs
         [MaxLength(100)]
         public string? FullName { get; set; }
 
+        [MaxLength(100)]
+        public string? Email { get; set; }
+
+        [MaxLength(100)]
+        public string? PasswordHash { get; set; }
+
         [Range(0, 120)]
         public int? Age { get; set; }
 
@@ -18,5 +24,10 @@ namespace hospitalwebapp.DTOs
         public string? Address { get; set; }
 
         public string? BloodType { get; set; }
+        public int? PhoneNumber { get; set; }
+        public string? Gender { get; set; }
+        public string? ProfileImageUrl { get; set; }
+        public string? EmergencyContact { get; set; }
+        public string? Genotype { get; set; }
     }
 }

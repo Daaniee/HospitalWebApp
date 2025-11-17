@@ -36,7 +36,14 @@ namespace hospitalwebapp.Controllers
                     p.Age,
                     p.Address,
                     p.BloodType,
-                    p.CreatedAt
+                    p.Email,
+                    p.PasswordHash,
+                    p.PhoneNumber,
+                    p.Gender,
+                    p.ProfileImageUrl,
+                    p.EmergencyContact,
+                    p.Genotype,
+                    p.CreatedAt,
                 })
                 .ToListAsync();
 
@@ -96,7 +103,14 @@ namespace hospitalwebapp.Controllers
                     p.Age,
                     p.Address,
                     p.BloodType,
-                    p.CreatedAt
+                    p.Email,
+                    p.PasswordHash,
+                    p.PhoneNumber,
+                    p.Gender,
+                    p.ProfileImageUrl,
+                    p.EmergencyContact,
+                    p.Genotype,
+                    p.CreatedAt,
                 })
                 .ToListAsync();
 
@@ -135,8 +149,15 @@ namespace hospitalwebapp.Controllers
                 CardNumber = cardNumber,
                 FullName = dto.FullName,
                 Age = dto.Age,
+                Email = dto.Email,
+                PasswordHash = dto.PasswordHash,
                 Address = dto.Address,
                 BloodType = dto.BloodType,
+                PhoneNumber = dto.PhoneNumber,
+                Gender = dto.Gender,
+                ProfileImageUrl = dto.ProfileImageUrl,
+                EmergencyContact = dto.EmergencyContact,
+                Genotype = dto.Genotype,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow
             };
@@ -177,7 +198,14 @@ namespace hospitalwebapp.Controllers
                 patient.FullName,
                 patient.Age,
                 patient.Address,
-                patient.BloodType
+                patient.BloodType,
+                patient.Email,
+                patient.PasswordHash,
+                patient.PhoneNumber,
+                patient.Gender,
+                patient.ProfileImageUrl,
+                patient.EmergencyContact,
+                patient.Genotype
             };
 
             // Apply partial updates
@@ -185,6 +213,13 @@ namespace hospitalwebapp.Controllers
             if (dto.Age.HasValue) patient.Age = dto.Age.Value;
             if (dto.Address != null) patient.Address = dto.Address;
             if (dto.BloodType != null) patient.BloodType = dto.BloodType;
+            if (dto.Email != null) patient.Email = dto.Email;
+            if (dto.PasswordHash != null) patient.PasswordHash = dto.PasswordHash;
+            if (dto.PhoneNumber.HasValue) patient.PhoneNumber = dto.PhoneNumber.Value;
+            if (dto.Gender != null) patient.Gender = dto.Gender;
+            if (dto.ProfileImageUrl != null) patient.ProfileImageUrl = dto.ProfileImageUrl;
+            if (dto.EmergencyContact != null) patient.EmergencyContact = dto.EmergencyContact;
+            if (dto.Genotype != null) patient.Genotype = dto.Genotype;
 
             patient.UpdatedAt = DateTime.UtcNow;
             await _context.SaveChangesAsync();
@@ -266,7 +301,9 @@ namespace hospitalwebapp.Controllers
                     p.FullName,
                     p.Age,
                     p.Address,
-                    p.BloodType
+                    p.BloodType,
+                    p.Email,
+                    p.PasswordHash
                 })
                 .ToListAsync();
 
@@ -274,6 +311,13 @@ namespace hospitalwebapp.Controllers
                 return NotFound(new ApiResponseNoData(false, 404, "No deleted patients found"));
 
             return Ok(new ApiResponse<object>(true, 200, "Deleted patients retrieved successfully", deletedPatients));
+        }
+
+        [HttpPost("check-email")]
+        public async Task<IActionResult> CheckEmail(string email)
+        {
+            var exists = await _context.Patients.AnyAsync(p => p.Email == email && !p.IsDeleted);
+            return Ok(new { exists });
         }
 
     }

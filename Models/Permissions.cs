@@ -9,9 +9,9 @@ namespace hospitalwebapp.Models
 
         [Required]
         [MaxLength(100)]
-        public string Action { get; set; }
+        public string? Action { get; set; }
 
         // 🔗 Navigation for many-to-many
-        public ICollection<RolePermission> RolePermissions { get; set; }
+        public ICollection<RolePermission> RolePermissions { get; set; } = new List<RolePermission>();
     }
 }

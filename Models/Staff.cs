@@ -10,31 +10,31 @@ namespace hospitalwebapp.Models
 
     [Required]
     [MaxLength(20)]
-    public string CustomId { get; set; }
+    public required string CustomId { get; set; }
 
     [Required]
     [MaxLength(100)]
-    public string FullName { get; set; }
+    public required string FullName { get; set; }
 
     [Required]
     [EmailAddress]
     [MaxLength(100)]
-    public string Email { get; set; }
+    public required string Email { get; set; }
 
     [Phone]
     [MaxLength(20)]
-    public string PhoneNumber { get; set; }
+    public required string PhoneNumber { get; set; }
 
     [Required]
     [MaxLength(10)]
-    public string Gender { get; set; }
+    public required string Gender { get; set; }
 
     [Required]
     [MaxLength(255)]
-    public string ProfileImageUrl { get; set; }
+    public string? ProfileImageUrl { get; set; }
 
     [Required]
-    public string PasswordHash { get; set; }
+    public required string PasswordHash { get; set; }
     
     public string? Specialization { get; set; }
 
@@ -45,14 +45,14 @@ namespace hospitalwebapp.Models
 
     [ForeignKey("Role")]
     public int RoleId { get; set; }
-    public Role Role { get; set; }
+    public Role? Role { get; set; }
 
     [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 
-    public ICollection<MedicalRecord> MedicalRecords { get; set; }
+    public ICollection<MedicalRecord> MedicalRecords { get; set; } = new List<MedicalRecord>();
 }
 
 }

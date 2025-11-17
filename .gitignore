@@ -1,0 +1,62 @@
+# Build results
+bin/
+obj/
+out/
+
+# User-specific files
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Logs and temp
+*.log
+*.tmp
+*.temp
+
+# Executables and installers (avoid pushing infected files)
+*.exe
+*.dll
+*.msi
+*.bat
+*.cmd
+
+# Packages
+*.nupkg
+*.snupkg
+*.nuspec
+packages/
+
+# Visual Studio files
+.vs/
+.vscode/
+
+# Resharper / Rider
+_ReSharper*/
+*.DotSettings.user
+
+# ASP.NET Core secrets
+secrets.json
+appsettings.Development.json
+
+# Publish outputs
+wwwroot/
+publish/
+
+# OS generated files
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+.DS_Store
+
+# Backup files
+*.bak
+*.swp
+*.swo
+
+# Frontend build artifacts
+node_modules/
+dist/
+build/
+*.log
+*.env

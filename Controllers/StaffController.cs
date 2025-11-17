@@ -232,7 +232,7 @@ namespace hospitalwebapp.Controllers
                     FullName = dto.FullName,
                     Email = dto.Email,
                     PhoneNumber = dto.PhoneNumber,
-                    Gender = dto.Gender,
+                    Gender = dto.Gender ?? "Unspecified",
                     Specialization = dto.Specialization ?? string.Empty,
                     ProfileImageUrl = dto.ProfileImageUrl,
                     PasswordHash = dto.PasswordHash,

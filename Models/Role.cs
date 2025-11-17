@@ -9,12 +9,12 @@ namespace hospitalwebapp.Models
 
         [Required]
         [MaxLength(50)]
-        public string Name { get; set; }
+        public required string Name { get; set; }
 
         public bool IsDeleted { get; set; } = false;
 
-        public ICollection<Staff> Staffs { get; set; }
-        public ICollection<Permission> Permissions { get; set; }
-        public ICollection<RolePermission> RolePermissions { get; set; }
+        public ICollection<Staff> Staffs { get; set; } = new List<Staff>();
+        public ICollection<Permission> Permissions { get; set; } = new List<Permission>();
+        public ICollection<RolePermission> RolePermissions { get; set; }  = new List<RolePermission>();
     }
 }
